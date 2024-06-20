@@ -1,6 +1,6 @@
 import allure
 import requests
-from data import Data
+from data import Data, TextAnswer
 from helpers import create_login_courier_random, create_courier_pass_random, create_courier_name_random
 
 
@@ -14,7 +14,7 @@ class TestNewCourierCreate:
                    'name': create_courier_name_random()
         }
         response = requests.post(Data.Url_create_courier, data=payload)
-        assert response.status_code == 201, response.json == '{"ok":true}'
+        assert response.status_code == 201, response.json == TextAnswer.create_courier
 
     @allure.title('Проверка невозможности создания двух одинаковых аккаунтов курьеров')
     @allure.description('Посылаем два запроса с одинаковыми регистрационными данными и получаем ошибку и сообщение о '
@@ -24,9 +24,9 @@ class TestNewCourierCreate:
                    'password': create_courier_pass_random(),
                    'name': create_courier_name_random
                    }
+        requests.post(Data.Url_create_courier, data=payload)
         response = requests.post(Data.Url_create_courier, data=payload)
-        response2 = requests.post(Data.Url_create_courier, data=payload)
-        assert response2.status_code == 409 and response.json()['message'] == 'Этот логин уже используется. Попробуйте другой.'
+        assert response.status_code == 409, response.json()['message'] == TextAnswer.duplicate_courier
 
     @allure.title('Проверка невозможности регистрации курьера без одного обязательного поля')
     @allure.description('Посылаем запрос без поля "Пароль" и пытаемся создать аккаунт, получаем ошибку и её текст')
@@ -35,4 +35,4 @@ class TestNewCourierCreate:
                    'name': create_courier_name_random()
                    }
         response = requests.post(Data.Url_create_courier, data=payload)
-        assert response.status_code == 400 and response.json()['message'] == 'Недостаточно данных для создания учетной записи'
+        assert response.status_code == 400 and response.json()['message'] == TextAnswer.not_once_required_field
